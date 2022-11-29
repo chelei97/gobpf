@@ -95,7 +95,7 @@ func newModule(code string, cflags []string) *Module {
 	}
 	cs := C.CString(code)
 	defer C.free(unsafe.Pointer(cs))
-	c := C.bpf_module_create_c_from_string(cs, 2, (**C.char)(&cflagsC[0]), C.int(len(cflagsC)), (C.bool)(true), nil)
+	c := C.bpf_module_create_c_from_string(cs, 2, (**C.char)(&cflagsC[0]), C.int(len(cflagsC)), (C.bool)(true))
 	if c == nil {
 		return nil
 	}
@@ -227,7 +227,7 @@ func (bpf *Module) load(name string, progType int, logLevel, logSize uint) (int,
 		logBuf = make([]byte, logSize)
 		logBufP = (*C.char)(unsafe.Pointer(&logBuf[0]))
 	}
-	fd, err := C.bcc_func_load(bpf.p, C.int(uint32(progType)), nameCS, start, size, license, version, C.int(logLevel), logBufP, C.uint(len(logBuf)), nil)
+	fd, err := C.bcc_func_load(bpf.p, C.int(uint32(progType)), nameCS, start, size, license, version, C.int(logLevel), logBufP, C.uint(len(logBuf)))
 	if fd < 0 {
 		return -1, fmt.Errorf("error loading BPF program: %v", err)
 	}
@@ -258,7 +258,7 @@ func (bpf *Module) attachProbe(evName string, attachType uint32, fnName string, 
 func (bpf *Module) attachUProbe(evName string, attachType uint32, path string, addr uint64, fd, pid int) error {
 	evNameCS := C.CString(evName)
 	binaryPathCS := C.CString(path)
-	res, err := C.bpf_attach_uprobe(C.int(fd), attachType, evNameCS, binaryPathCS, (C.uint64_t)(addr), (C.pid_t)(pid), 0)
+	res, err := C.bpf_attach_uprobe(C.int(fd), attachType, evNameCS, binaryPathCS, (C.uint64_t)(addr), (C.pid_t)(pid))
 	C.free(unsafe.Pointer(evNameCS))
 	C.free(unsafe.Pointer(binaryPathCS))
 
